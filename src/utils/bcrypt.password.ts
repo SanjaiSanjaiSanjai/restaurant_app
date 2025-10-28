@@ -1,4 +1,4 @@
-  import { hash } from "bcrypt";
+  import { compare, hash } from "bcrypt";
 
 
   /**
@@ -13,4 +13,9 @@
    */
   export async function hashPasswordGenarate(password: string): Promise<string>{
     return await hash(password,10)
+  }
+
+
+  export async function passwordComparation(dbpassword: string,UserPassword: string):  Promise<boolean>{
+    return await compare(dbpassword,UserPassword)
   }

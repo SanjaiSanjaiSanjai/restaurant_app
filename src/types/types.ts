@@ -15,3 +15,10 @@ export type UserRegister = {
     email: string
     password: string
 }
+
+ interface UserLogin {
+    email: string
+    password: string
+}
+
+export type ReadonlyLoginUserType = Readonly<UserLogin>

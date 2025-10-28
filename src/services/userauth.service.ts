@@ -1,10 +1,10 @@
-import { findOneByCondition, insertDataByDb } from "../DBHandleFunction/DB.Handler";
-import { UserRegister } from "../types/types";
-import { hashPasswordGenarate } from "../utils/bcrypt.password";
+import { findOneByCondition, insertDataByDb, updateAndOp } from "../DBHandleFunction/DB.Handler";
+import { ReadonlyLoginUserType, UserRegister } from "../types/types";
+import { hashPasswordGenarate, passwordComparation } from "../utils/bcrypt.password";
 import { accessTokenGenerated, findExpireTime, refreshTokenGenerated } from "../utils/jwt.auth";
 import { roleIdentifier } from "../utils/user.rolefind";
 
-export async function handleUserAuthService(userDetails: UserRegister): Promise<{payload: any,refresh_token: string,access_token: string,tokenPayload: any}>{
+export async function handleUserRegisterAuthService(userDetails: UserRegister): Promise<{payload: any,refresh_token: string,access_token: string,tokenPayload: any}>{
     const isAvailableUser = await findOneByCondition("Users","email",userDetails.email)
     if(isAvailableUser) throw new Error(' Already user is available! ')
 
@@ -24,11 +24,35 @@ export async function handleUserAuthService(userDetails: UserRegister): Promise<
     if(!newAccessToken) throw new Error('access Token is not generated')
 
     const tokenExpiretime = await findExpireTime(newRefreshToken)
-    const refreshTokenStoredDb = await insertDataByDb('RefreshToken',['userId','token','expired_at'],[getNewUserRecord.id,newRefreshToken,tokenExpiretime])
+    const refreshTokenStoredDb = await insertDataByDb('RefreshToken',['user','token','expired_at'],[getNewUserRecord,newRefreshToken,tokenExpiretime])
     return {
         payload: getNewUserRecord,
         refresh_token: newRefreshToken,
         access_token: newAccessToken,
         tokenPayload: refreshTokenStoredDb
     }
+}
+
+
+
+
+
+
+export async function handleUserLoginAuthService(loginUserDetails: ReadonlyLoginUserType) {
+    const fetchSingleUser = await findOneByCondition("Users","email",loginUserDetails.email)
+    if(!fetchSingleUser) throw new Error("Not Found User Details register first")
+
+    if(!passwordComparation(fetchSingleUser.password,loginUserDetails.password)){
+        throw new Error("password is wrong")
+    }
+
+    const refresh_token = await refreshTokenGenerated(fetchSingleUser.id,loginUserDetails.email)
+    if(refresh_token.length == 0) throw new Error("Not created refresh token")
+
+    const role = roleIdentifier(loginUserDetails.email)
+
+    const access_token = await accessTokenGenerated(fetchSingleUser.id,loginUserDetails.email,role)
+    if(access_token.length == 0) throw new Error("Not created access token")
+
+    await updateAndOp("RefreshToken",{token: refresh_token,refreshCount: 0},{userId: fetchSingleUser.id})
 }

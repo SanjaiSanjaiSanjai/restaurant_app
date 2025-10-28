@@ -1,9 +1,10 @@
 import "reflect-metadata"
 import {DataSource} from "typeorm"
 import dotenv from "dotenv";
+dotenv.config()
+
 import { Users } from "./entity/User.entity";
 import { RefreshToken } from "./entity/refreshToken.entity";
-dotenv.config()
 
 export const AppDataSource = new DataSource({
     type: 'postgres',
@@ -12,9 +13,10 @@ export const AppDataSource = new DataSource({
     username: process.env.DB_USER,
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
-    entities: [Users,RefreshToken],
-    synchronize: true,
-    logging: false
+    entities: [Users, RefreshToken],
+    migrations: ['src/migrations/*.ts'],
+    synchronize: false,
+    logging: true
 })
 
 export async function ConfigurationDB() {

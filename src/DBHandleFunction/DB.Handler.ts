@@ -1,3 +1,4 @@
+import { AppDataSource } from "../data-source";
 import { user_repo } from "../repositary/repositary";
 import { ALLOWED_TABLES, ALLOWED_TABLES_TYPE, allRepo } from "../types/types";
 
@@ -56,4 +57,15 @@ export async function findallwithCondition(table: ALLOWED_TABLES_TYPE,condition:
         record[condition[i].column] = condition[i].value;
     }
    return repo.find({where: record})
+}
+
+export async function updateAndOp(table: ALLOWED_TABLES_TYPE,data: any,condition:{}) {
+    const keys = Object.keys(condition)
+    const whereClause = keys.map((k) => `${k} = :${k}`)
+    const whereClauseString = whereClause.join(" AND ")
+    let query = AppDataSource.createQueryBuilder()
+                .update(table)
+                .set(data)
+                .where(whereClauseString,condition)
+    await query.execute()
 }
