@@ -3,6 +3,7 @@ import { ConfigurationDB } from "./data-source";
 import userRoutes from "./routes/userauth.routes";
 import categoryRouter from "./routes/category.routes";
 import menuItemsRouter from "./routes/menuItems.routes";
+import menusRouter from "./routes/menus.routes";
 // import { reCreatearefreshToken } from "./utils/jwt.auth";
 
 const app = express();
@@ -14,5 +15,6 @@ app.use(express.json())
 app.use("/",userRoutes)
 app.use("/",categoryRouter)
 app.use("/",menuItemsRouter)
+app.use("/",menusRouter)
 
 app.listen(7000,() => console.log('Server started on http://localhost:7000'))

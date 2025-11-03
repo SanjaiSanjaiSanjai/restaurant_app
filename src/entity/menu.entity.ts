@@ -1,22 +1,25 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
-@Entity({name: "menu_items"})
-export class Menus_items {
+@Entity({name: "menus"})
+export class Menus {
     @PrimaryGeneratedColumn()
     id : number
 
-    @Column( { type: 'varchar', length: 100, nullable: false })
+    @Column()
     name: string
 
-    @Column( { type: 'text', nullable: false })
-    description: string | null
+    @Column({type: "time"})
+    open_time: string
 
-    @Column( { type: 'boolean', default: true })
+    @Column({type: "time"})
+    close_time: string
+
+    @Column({default: true})
     status: boolean
 
-    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     created_at: Date
 
-    @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+    @UpdateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     updated_at: Date
 }
