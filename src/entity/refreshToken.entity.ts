@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Users } from "./User.entity";
 
 @Index('IDX_USERID_STATUS',['user','status'])
@@ -26,5 +26,9 @@ export class RefreshToken {
    updated_at: Date
 
    @ManyToOne(() => Users,(user) => user.token,{nullable: false})
+   @JoinColumn({name: "userId"})
    user: Users
+
+   @Column({default: 0})
+   userId: number
 }

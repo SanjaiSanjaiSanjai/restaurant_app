@@ -1,5 +1,4 @@
 import { AppDataSource } from "../data-source";
-import { user_repo } from "../repositary/repositary";
 import { ALLOWED_TABLES, ALLOWED_TABLES_TYPE, allRepo } from "../types/types";
 
 

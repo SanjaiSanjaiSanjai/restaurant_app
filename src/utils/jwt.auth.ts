@@ -8,6 +8,22 @@ const REFRESH_SECRET_KEY = process.env.SECRET_REFRESH_KEY || 'super.refresh.secr
 const ACCESS_SECRET_KEY = process.env.SECRET_ACCESS_KEY || 'super.access.secret'
 
 
+
+
+declare global {
+    namespace Express {
+        interface Request {
+            user ?: {
+                userId: number,
+                email: string,
+                role: string,
+                type: string
+            }
+        }
+    }
+}
+
+
 /**
  * Generates a refresh token for a user
  * @param userId - The id of the user
@@ -44,7 +60,7 @@ interface TokenPayload extends jwt.JwtPayload {
  * @returns Decoded token payload if verification is successful
  * @throws {Error} If authorization header is missing, malformed, or token is invalid
  */
-export async function authorizationToken(req: Request,next: NextFunction) {
+export async function authorizationToken(req: Request,res: Response,next: NextFunction) {
     const authHeader = req.headers["authorization"];
     
     if (!authHeader) {
@@ -61,6 +77,7 @@ export async function authorizationToken(req: Request,next: NextFunction) {
     
     const isVerified = await verifyToken(token);
     if (isVerified) {
+        req.user = isVerified as unknown as { userId: number; email: string; role: string; type: string };
         next()
     }
 }
@@ -149,8 +166,25 @@ export const tokenDecode = async (token: string) : Promise<TokenPayload> =>{
 export const findExpireTime = async(token: string): Promise<Date>=> {
     // Decode the token to get the expiration time
     const decode = await tokenDecode(token)
-    const expTime = decode?.iat;
+    const expTime = decode?.exp;
     // Calculate the expiration time of the token
     const tokenExpireTime = new Date(expTime as number);
     return tokenExpireTime
+}
+
+
+
+export const allowApiAccessRole = (role: string[]) => {
+    return (req: Request,res: Response,next: NextFunction) => {
+         console.log("request: ", req.user)
+        if (!req.user) {
+            throw new Error("req user is empty")
+        }
+
+        if (!role.includes(req.user.role)) {
+            throw new Error("Specific role only access")
+        }
+
+        next()
+     }
 }

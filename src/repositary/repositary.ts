@@ -1,12 +1,19 @@
 import { Users } from "../entity/User.entity";
 import { AppDataSource } from "../data-source";
 import { RefreshToken } from "../entity/refreshToken.entity";
+import { Category } from "../entity/category.entity";
+import { Menus_items } from "../entity/menu.entity";
 
 
 /**
  * Repository for Users table in database 
  * @type {Repository<Users>}
+ * @type {Repository<RefreshToken>}
+ * @type {Repository<Category>}
+ * @type {Repository<Menus_items>}
  */
 
 export const user_repo = AppDataSource.getRepository(Users)         
 export const refresh_token_repo = AppDataSource.getRepository(RefreshToken)         
+export const category_repo = AppDataSource.getRepository(Category)         
+export const menus_items_repo = AppDataSource.getRepository(Menus_items)         

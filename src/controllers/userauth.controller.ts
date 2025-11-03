@@ -1,7 +1,7 @@
 
 import { Request, Response } from 'express';
 import { handleUserLoginAuthService, handleUserRegisterAuthService } from '../services/userauth.service';
-import { ReadonlyLoginUserType } from '../types/types';
+import { ReadonlyLoginUserType } from '../types/types.js';
 
 
 export async function handleUserRegisterAuthController(req: Request, res: Response) {

@@ -1,10 +1,13 @@
 import "reflect-metadata"
-import {DataSource} from "typeorm"
+import { DataSource } from "typeorm"
 import dotenv from "dotenv";
-dotenv.config()
-
 import { Users } from "./entity/User.entity";
 import { RefreshToken } from "./entity/refreshToken.entity";
+import { Category } from "./entity/category.entity";
+import { Menus_items } from "./entity/menu.entity";
+dotenv.config()
+
+
 
 export const AppDataSource = new DataSource({
     type: 'postgres',
@@ -13,9 +16,8 @@ export const AppDataSource = new DataSource({
     username: process.env.DB_USER,
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
-    entities: [Users, RefreshToken],
-    migrations: ['src/migrations/*.ts'],
-    synchronize: false,
+    entities: [Users, RefreshToken, Category,Menus_items],
+    synchronize: true,
     logging: true
 })
 
@@ -24,7 +26,7 @@ export async function ConfigurationDB() {
         await AppDataSource.initialize()
         console.log("[data-source]: Successfully connected in db")
     } catch (error) {
-        const err = error as Error 
-        console.error("[data-source]: ",err.message)
+        const err = error as Error
+        console.error("[data-source]: ", err.message)
     }
 }
