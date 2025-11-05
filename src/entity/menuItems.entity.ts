@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
+import { MenuItemsCategory } from "./menu_items.category.entity";
 
 @Entity({name: "menu_items"})
 export class Menus_items {
@@ -19,4 +20,7 @@ export class Menus_items {
 
     @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
     updated_at: Date
+
+    @OneToMany(() => MenuItemsCategory,(menuitemcategory) => menuitemcategory.menu_item)
+    menu_items_categories: MenuItemsCategory[]
 }

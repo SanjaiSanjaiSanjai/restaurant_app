@@ -1,3 +1,4 @@
+import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 import { AppDataSource } from "../data-source";
 import { ALLOWED_TABLES, ALLOWED_TABLES_TYPE, allRepo } from "../types/types";
 
@@ -29,11 +30,11 @@ export async function insertDataByDb(table: ALLOWED_TABLES_TYPE, column: string[
         throw new Error('Mismatch between the number of columns and values');
     }
 
-    const repo = allRepo[table] 
+    const repo = allRepo[table]
 
     let record: any = {};
     for (let i = 0; i < column.length; i++) {
-        record[column[i]]  = value[i];
+        record[column[i]] = value[i];
     }
     const savedRecord = await repo.insert(record)
     return savedRecord.raw[0]
@@ -45,26 +46,39 @@ export async function insertDataByDb(table: ALLOWED_TABLES_TYPE, column: string[
  * @param {condition} condition - take condition array by columnCondition type
  */
 
-type columnCondition = {column: string, value: any}
-export async function findallwithCondition(table: ALLOWED_TABLES_TYPE,condition: columnCondition[]) {
+type columnCondition = { column: string, value: any }
+export async function findallwithCondition(table: ALLOWED_TABLES_TYPE, condition: columnCondition[]) {
     if (!ALLOWED_TABLES.includes(table)) throw new Error('Table is not found!')
-    
+
     const repo = allRepo[table]
     let record: any = {}
 
-    for(let i = 0; i < condition.length; i++){
+    for (let i = 0; i < condition.length; i++) {
         record[condition[i].column] = condition[i].value;
     }
-   return repo.find({where: record})
+    return repo.find({ where: record })
 }
 
-export async function updateAndOp(table: ALLOWED_TABLES_TYPE,data: any,condition:{}) {
+export async function updateAndOp(table: ALLOWED_TABLES_TYPE, data: any, condition: {}) {
     const keys = Object.keys(condition)
     const whereClause = keys.map((k) => `${k} = :${k}`)
     const whereClauseString = whereClause.join(" AND ")
     let query = AppDataSource.createQueryBuilder()
-                .update(table)
-                .set(data)
-                .where(whereClauseString,condition)
+        .update(table)
+        .set(data)
+        .where(whereClauseString, condition)
     await query.execute()
+}
+
+
+interface JoinConfig{
+    property: string,
+    joinTable : string,
+    condition?: string
+}
+export async function InnerJoinFunction<T extends ObjectLiteral>(qb: SelectQueryBuilder<T>,Join: JoinConfig[]): Promise<T[]> {
+   Join.forEach((join)=>{
+    join.condition ? qb.innerJoin(join.property,join.joinTable,join.condition) : qb.innerJoin(join.property,join.joinTable)
+   })
+   return qb.getMany()
 }

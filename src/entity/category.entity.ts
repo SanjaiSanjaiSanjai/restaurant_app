@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
+import { MenuItemsCategory } from "./menu_items.category.entity";
 
 @Entity({ name: "Categories" })
 export class Category {
@@ -21,7 +22,6 @@ export class Category {
     @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
     updated_at: Date;
 
-    // You can add relationships here if needed, for example:
-    // @OneToMany(() => Product, product => product.category)
-    // products: Product[];
+    @OneToMany(() => MenuItemsCategory,(menuItemsCategory) => menuItemsCategory.category)
+    menu_items_categories: MenuItemsCategory[]
 }

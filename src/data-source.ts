@@ -6,6 +6,8 @@ import { RefreshToken } from "./entity/refreshToken.entity";
 import { Category } from "./entity/category.entity";
 import { Menus_items } from "./entity/menuItems.entity";
 import { Menus } from "./entity/menu.entity";
+import { MenuItemsCategory } from "./entity/menu_items.category.entity";
+
 dotenv.config()
 
 
@@ -17,7 +19,7 @@ export const AppDataSource = new DataSource({
     username: process.env.DB_USER,
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
-    entities: [Users, RefreshToken, Category,Menus_items,Menus],
+    entities: [Users, RefreshToken, Category,Menus_items,Menus,MenuItemsCategory],
     synchronize: true,
     logging: true
 })
