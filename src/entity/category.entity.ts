@@ -9,8 +9,8 @@ export class Category {
     @Column({ type: 'varchar', length: 100, unique: true, nullable: false })
     name: string;
 
-    @Column({ type: 'text', nullable: true })
-    description: string | null;
+    @Column({ type: 'text', nullable: false })
+    description: string ;
 
 
     @Column({ type: 'boolean', default: true })

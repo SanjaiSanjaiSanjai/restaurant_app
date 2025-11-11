@@ -1,8 +1,10 @@
+import { AppDataSource } from "../data-source";
 import { findOneByCondition, insertDataByDb, updateAndOp, findallwithCondition } from "../DBHandleFunction/DB.Handler";
+import { Category } from "../entity/category.entity";
 
 
 // Define category types
-export interface Category {
+export interface CategoryDbType {
     id: number;
     name: string;
     description: string | null;
@@ -17,9 +19,9 @@ export interface CreateCategoryInput {
 }
 
 // Create a new category
-export const createCategoryService = async (categoryData: CreateCategoryInput): Promise<Category> => {
+export const createCategoryService = async (categoryData: CreateCategoryInput): Promise<CategoryDbType> => {
     try {
-        const existingCategory = await findOneByCondition("Categories", "name", categoryData.name);
+        const existingCategory = await findOneByCondition(AppDataSource,Category,{name: categoryData.name});
         if (existingCategory) {
             console.error('Category already exists');
             throw new Error("Category already exists");
@@ -28,9 +30,9 @@ export const createCategoryService = async (categoryData: CreateCategoryInput): 
         console.log('Category is not exist');
         
         const newCategory = await insertDataByDb(
-            'Categories', // Using Users table as a fallback since Categories is not in ALLOWED_TABLES
-            ['name', 'description'],
-            [categoryData.name, categoryData.description || null]
+            AppDataSource, // Using Users table as a fallback since Categories is not in ALLOWED_TABLES
+            Category,
+            {name: categoryData.name,description: categoryData.description}
         );
 
         if (!newCategory) {
@@ -39,7 +41,7 @@ export const createCategoryService = async (categoryData: CreateCategoryInput): 
         }
 
         console.log('Creating new category:', categoryData);
-        return newCategory as unknown as Category;
+        return newCategory as unknown as CategoryDbType;
     } catch (error) {
         console.error('Error in createCategory service:', error);
         throw error;
@@ -47,14 +49,14 @@ export const createCategoryService = async (categoryData: CreateCategoryInput): 
 };
 
 // Get all categories
-export const getAllCategoriesService = async (): Promise<Category[]> => {
+export const getAllCategoriesService = async (): Promise<CategoryDbType[]> => {
     try {
-        const categories = await findallwithCondition('Categories', [{column: "status",value: true}]);
+        const categories = await findallwithCondition(AppDataSource,Category,{status: true});
         if (categories.length === 0) {
             console.error('No categories found');
             throw new Error('No categories found');
         }
-        return categories as unknown as Category[];
+        return categories as unknown as CategoryDbType[];
     } catch (error) {
         console.error('Error in getAllCategories service:', error);
         throw error;
@@ -62,14 +64,14 @@ export const getAllCategoriesService = async (): Promise<Category[]> => {
 };
 
 // Get category by ID
-export const getCategoryService = async (id: number): Promise<Category | null> => {
+export const getCategoryService = async (id: number): Promise<CategoryDbType | null> => {
     try {
-        const category = await findOneByCondition("Categories", "id", id);
-        if (category.length === 0) {
+        const category = await findOneByCondition(AppDataSource,Category,{id: id});
+        if (category === null) {
             console.error('No categories found');
             throw new Error('No categories found');
         }
-        return category as unknown as Category | null;
+        return category as unknown as CategoryDbType | null;
     } catch (error) {
         console.error('Error in getCategory service:', error);
         throw error;

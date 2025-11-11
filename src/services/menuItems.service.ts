@@ -1,4 +1,6 @@
+import { AppDataSource } from "../data-source";
 import { findallwithCondition, findOneByCondition, insertDataByDb } from "../DBHandleFunction/DB.Handler";
+import { Menus_items } from "../entity/menuItems.entity";
 
 type CreateMenuItems = {
     name: string,
@@ -16,13 +18,13 @@ export interface Menu_items{
 // Create a new menu item
 export const createMenuItemsService = async (menu_items: CreateMenuItems): Promise<Menu_items> => {
     try {
-        const exsistingMenuItems = await findOneByCondition("Menu_items", "name", menu_items.name)
+        const exsistingMenuItems = await findOneByCondition(AppDataSource,Menus_items,{name: menu_items.name})
         if (exsistingMenuItems) {
             console.error("[createMenuItemsService]: Menu Items is already available")
             throw new Error("Menu Items is already available")
         }
         console.log(`[createMenuItemsService]: ${menu_items.name} this menus is not available db`)
-        const newMenuItemsDB = await insertDataByDb("Menu_items", ["name", "description"], [menu_items.name, menu_items.description])
+        const newMenuItemsDB = await insertDataByDb(AppDataSource,Menus_items,{name:menu_items.name,description: menu_items.description})
         if (!newMenuItemsDB) {
             console.error("[createMenuItemsService]: Not create menu items in db")
             throw new Error("Not create menu items in db")
@@ -39,7 +41,7 @@ export const createMenuItemsService = async (menu_items: CreateMenuItems): Promi
 // Get all menu items
 export const getAllMenuItemsService = async (): Promise<Menu_items[]> => {
     try {
-        const menu_items = await findallwithCondition('Menu_items', [{ column: "status", value: true }]);
+        const menu_items = await findallwithCondition(AppDataSource,Menus_items,{status: true});
         if (menu_items.length === 0) {
             console.error('No menu items found');
             throw new Error('No menu items found');

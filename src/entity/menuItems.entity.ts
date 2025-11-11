@@ -10,7 +10,7 @@ export class Menus_items {
     name: string
 
     @Column( { type: 'text', nullable: false })
-    description: string | null
+    description: string 
 
     @Column( { type: 'boolean', default: true })
     status: boolean

@@ -1,4 +1,6 @@
+import { AppDataSource } from "../data-source";
 import { findallwithCondition, findOneByCondition, insertDataByDb } from "../DBHandleFunction/DB.Handler";
+import { Menus } from "../entity/menu.entity";
 import { timeChanger } from "../utils/utils.functions";
 
 
@@ -20,7 +22,7 @@ type Menu = {
 // Create a new menu
 export const createMenuService = async (menuData: CreateMenu): Promise<Menu> => {
     try {
-        const existingMenu = await findOneByCondition("Menu", "name", menuData.name);
+        const existingMenu = await findOneByCondition(AppDataSource,Menus,{name: menuData.name});
         if (existingMenu) {
             console.error('Menu already exists');
             throw new Error("Menu already exists");
@@ -29,11 +31,7 @@ export const createMenuService = async (menuData: CreateMenu): Promise<Menu> => 
         console.log('Menu is not exist');
         const openTime = timeChanger(menuData.opening_time)
         const closeTime = timeChanger(menuData.closing_time)
-        const newMenu = await insertDataByDb(
-            'Menu', // Using Users table as a fallback since Categories is not in ALLOWED_TABLES
-            ['name', 'open_time', 'close_time'],
-            [menuData.name, openTime, closeTime]
-        );
+        const newMenu = await insertDataByDb(AppDataSource,Menus,{name: menuData.name,open_time: openTime,close_time: closeTime});
 
         if (!newMenu) {
             console.error('Failed to create menu');
@@ -51,7 +49,7 @@ export const createMenuService = async (menuData: CreateMenu): Promise<Menu> => 
 // Get all menus
 export const getAllMenusService = async (): Promise<Menu[]> => {
     try {
-        const menus = await findallwithCondition("Menu",[{column:"status",value:true}])
+        const menus = await findallwithCondition(AppDataSource,Menus,{status: true})
         if (menus.length === 0) {
             console.error('No menus found');
             throw new Error('No menus found');

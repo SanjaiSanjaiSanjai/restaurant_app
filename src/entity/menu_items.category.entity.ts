@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Category } from "./category.entity";
 import { Menus_items } from "./menuItems.entity";
 
@@ -10,17 +10,17 @@ export class MenuItemsCategory {
     @Column({default:true})
     status: boolean
 
-    @Column({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
+    @CreateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     created_at: Date
 
-    @Column({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
+    @UpdateDateColumn({type: 'timestamp', default: () => 'CURRENT_TIMESTAMP'})
     updated_at: Date
 
-    @ManyToOne(() => Category,(cate) => cate.menu_items_categories)
+    @ManyToOne(() => Category,(cate) => cate.menu_items_categories,{nullable:false})
     @JoinColumn({name: 'category_id'})
     category: Category
 
-    @ManyToOne(() => Menus_items,(mi) => mi.menu_items_categories)
+    @ManyToOne(() => Menus_items,(mi) => mi.menu_items_categories,{nullable:false})
     @JoinColumn({name: 'menu_item_id'})
     menu_item: Menus_items
 }

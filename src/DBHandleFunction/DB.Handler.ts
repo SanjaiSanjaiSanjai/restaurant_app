@@ -1,43 +1,40 @@
-import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
+import { DataSource, ObjectLiteral, SelectQueryBuilder } from "typeorm";
 import { AppDataSource } from "../data-source";
 import { ALLOWED_TABLES, ALLOWED_TABLES_TYPE, allRepo } from "../types/types";
+import { MenuItemsCategory } from "../entity/menu_items.category.entity";
+import { Menus_items } from "../entity/menuItems.entity";
+
 
 
 
 /**
- * Fetches a record from the specified repository based on the provided condition.
- *
- * @param {ALLOWED_TABLES_TYPE} table - Verify to tables
- * @param {string} condition - The condition to match.
- * @return {Promise<any>} A Promise that resolves to the found record, or null if none is found.
+ * Finds a single record in the specified table that matches the provided condition.
+ * @param {DataSource} dataSource - The data source to use for the search.
+ * @param {new() : T} entity - The entity class to use for searching the table.
+ * @param {ObjectLiteral} condition - The condition to match the record against.
+ * @return {Promise<ObjectLiteral | null>} A Promise that resolves to the matching record, or null if no match is found.
  */
-export async function findOneByCondition(table: ALLOWED_TABLES_TYPE, condition: string, data: any): Promise<any> {
-    const repo = allRepo[table]
-    return await repo.findOne({ where: { [condition]: data } });
+export async function findOneByCondition<T>(dataSource: DataSource,entity:{new(): T},condition: ObjectLiteral): Promise<ObjectLiteral | null>{
+    const entityDataSource = dataSource.manager.getRepository(entity)
+    const fetchSingleRecord = await entityDataSource.findOne({where:condition})
+    return fetchSingleRecord
 }
 
 
+
 /**
- * Inserts multiple records into the specified repository.
+ * Inserts a new record into the specified table using the provided data source and entity.
  *
- * @param {ALLOWED_TABLES_TYPE} table - The table to insert into.
- * @param {string[]} column - An array of column names.
- * @param {any[]} value - An array of values corresponding to the column names.
- * @throws {Error} If the number of columns and values do not match.
+ * @param {DataSource} dataSource - The data source to use for the insertion.
+ * @param {new() : T} entity - The entity class to use for creating the new record.
+ * @param {ObjectLiteral} entityData - The data to insert into the new record.
+ * @return {Promise<ObjectLiteral>} A Promise that resolves to the saved entity data.
  */
-export async function insertDataByDb(table: ALLOWED_TABLES_TYPE, column: string[], value: any[]): Promise<any> {
-    if (column.length !== value.length) {
-        throw new Error('Mismatch between the number of columns and values');
-    }
-
-    const repo = allRepo[table]
-
-    let record: any = {};
-    for (let i = 0; i < column.length; i++) {
-        record[column[i]] = value[i];
-    }
-    const savedRecord = await repo.insert(record)
-    return savedRecord.raw[0]
+export async function insertDataByDb<T>(dataSource: DataSource, entity:{new() : T}, entityData: ObjectLiteral): Promise<ObjectLiteral> {
+   const entityDataSource = dataSource.manager.getRepository(entity)
+   const entityNewDataCreate = entityDataSource.create(entityData)
+   const savedEntityData = await entityDataSource.save(entityNewDataCreate)
+   return savedEntityData
 }
 
 /**
@@ -46,17 +43,19 @@ export async function insertDataByDb(table: ALLOWED_TABLES_TYPE, column: string[
  * @param {condition} condition - take condition array by columnCondition type
  */
 
-type columnCondition = { column: string, value: any }
-export async function findallwithCondition(table: ALLOWED_TABLES_TYPE, condition: columnCondition[]) {
-    if (!ALLOWED_TABLES.includes(table)) throw new Error('Table is not found!')
 
-    const repo = allRepo[table]
-    let record: any = {}
-
-    for (let i = 0; i < condition.length; i++) {
-        record[condition[i].column] = condition[i].value;
-    }
-    return repo.find({ where: record })
+/**
+ * Finds all records in the specified table that match the provided condition.
+ *
+ * @param {DataSource} dataSource - The data source to use for the search.
+ * @param {new() : T} entity - The entity class to use for searching the table.
+ * @param {ObjectLiteral} condition - The condition to match the records against.
+ * @return {Promise<ObjectLiteral[]>} A Promise that resolves to an array of matching records.
+ */
+export async function findallwithCondition<T>(dataSource: DataSource, entity: {new(): T}, condition: ObjectLiteral): Promise<ObjectLiteral[]> {
+    const entityDataSource = dataSource.manager.getRepository(entity)
+    const fetchSingleRecord = await entityDataSource.find({where:condition})
+    return fetchSingleRecord
 }
 
 export async function updateAndOp(table: ALLOWED_TABLES_TYPE, data: any, condition: {}) {
@@ -70,15 +69,11 @@ export async function updateAndOp(table: ALLOWED_TABLES_TYPE, data: any, conditi
     await query.execute()
 }
 
-
-interface JoinConfig{
-    property: string,
-    joinTable : string,
-    condition?: string
-}
-export async function InnerJoinFunction<T extends ObjectLiteral>(qb: SelectQueryBuilder<T>,Join: JoinConfig[]): Promise<T[]> {
-   Join.forEach((join)=>{
-    join.condition ? qb.innerJoin(join.property,join.joinTable,join.condition) : qb.innerJoin(join.property,join.joinTable)
-   })
-   return qb.getMany()
+export async function menuItemsCategoryInnerJoin(id: number): Promise<MenuItemsCategory[]> {
+    const menuitemsRepo = AppDataSource.manager.getRepository(MenuItemsCategory)
+    const data = await menuitemsRepo.createQueryBuilder("MenuItemsCategories")
+    .innerJoinAndSelect("MenuItemsCategories.menu_item","menu_items")
+    .where("MenuItemsCategories.category_id = :category_id",{category_id:id})
+    .getMany()
+    return data
 }

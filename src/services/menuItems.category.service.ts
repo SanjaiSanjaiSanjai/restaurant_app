@@ -1,19 +1,22 @@
-import { findOneByCondition, insertDataByDb } from "../DBHandleFunction/DB.Handler";
+import { AppDataSource } from "../data-source";
+import { findOneByCondition, insertDataByDb, menuItemsCategoryInnerJoin } from "../DBHandleFunction/DB.Handler";
+import { Category } from "../entity/category.entity";
+import { MenuItemsCategory } from "../entity/menu_items.category.entity";
+import { Menus_items } from "../entity/menuItems.entity";
 
 
-export async function createMenuItemsCategoryService(category_id:number,menu_item_id:number) {
-    try 
-    {
-        const [exsistingCategory,exsistingMenuItems] = await Promise.all([
-            findOneByCondition("Categories","id",category_id),
-            findOneByCondition("Menu_items","id",menu_item_id)
+
+export async function createMenuItemsCategoryService(category_id: number, menu_item_id: number) {
+    try {
+        const [exsistingCategory, exsistingMenuItems] = await Promise.all([
+            findOneByCondition(AppDataSource,Category,{id: category_id}),
+            findOneByCondition(AppDataSource,Menus_items,{id: menu_item_id})
         ])
-        if(!exsistingCategory || !exsistingMenuItems) {
+        if (!exsistingCategory || !exsistingMenuItems) {
             console.error("Category or Menu Item not found")
             throw new Error("Category or Menu Item not found")
         }
-
-        const newMenuItemsCategory = await insertDataByDb("MenuItemsCategories",["category_id","menu_item_id"],[category_id,menu_item_id])
+        const newMenuItemsCategory = await insertDataByDb(AppDataSource, MenuItemsCategory,{category_id:category_id,menu_item_id:menu_item_id})
         if (!newMenuItemsCategory) {
             console.error("Menu Item Category not created")
             throw new Error("Menu Item Category not created")
@@ -21,6 +24,26 @@ export async function createMenuItemsCategoryService(category_id:number,menu_ite
         return newMenuItemsCategory
     } catch (error) {
         console.error("Menu Item Category not created")
+        throw error
+    }
+}
+
+
+export async function getAllByIdMenuItemsCategoryService(id: number) {
+    try {
+        const exsistingCategory = await findOneByCondition(AppDataSource,MenuItemsCategory,{id:id})
+        if (!exsistingCategory) {
+            console.error("Category not found")
+            throw new Error("Category not found")
+        }
+        const menuItemsCategory = await menuItemsCategoryInnerJoin(id)
+        if (!menuItemsCategory) {
+            console.error("Menu Item Category not found")
+            throw new Error("Menu Item Category not found")
+        }
+        return menuItemsCategory
+    } catch (error) {
+        console.error("Menu Item Category not found")
         throw error
     }
 }
