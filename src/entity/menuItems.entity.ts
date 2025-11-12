@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
 import { MenuItemsCategory } from "./menu_items.category.entity";
+import { menuMenuItems } from "./menu.menuItems.entity";
 
 @Entity({name: "menu_items"})
 export class Menus_items {
@@ -23,4 +24,7 @@ export class Menus_items {
 
     @OneToMany(() => MenuItemsCategory,(menuitemcategory) => menuitemcategory.menu_item)
     menu_items_categories: MenuItemsCategory[]
+
+    @OneToMany(() => menuMenuItems,(mmI) => mmI.menu_items_id)
+    menu_items_id: menuMenuItems[]
 }

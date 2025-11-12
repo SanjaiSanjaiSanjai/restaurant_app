@@ -1,5 +1,5 @@
 import { AppDataSource } from "../data-source";
-import { findOneByCondition, insertDataByDb, menuItemsCategoryInnerJoin } from "../DBHandleFunction/DB.Handler";
+import { findOneByCondition, innerJoin, insertDataByDb } from "../DBHandleFunction/DB.Handler";
 import { Category } from "../entity/category.entity";
 import { MenuItemsCategory } from "../entity/menu_items.category.entity";
 import { Menus_items } from "../entity/menuItems.entity";
@@ -36,7 +36,7 @@ export async function getAllByIdMenuItemsCategoryService(id: number) {
             console.error("Category not found")
             throw new Error("Category not found")
         }
-        const menuItemsCategory = await menuItemsCategoryInnerJoin(id)
+        const menuItemsCategory = await innerJoin(AppDataSource,MenuItemsCategory,"MenuItemsCategories",{foriegnKeyTable:"menu_item",joinAliasTableName:"menu_items"},id,"id")
         if (!menuItemsCategory) {
             console.error("Menu Item Category not found")
             throw new Error("Menu Item Category not found")

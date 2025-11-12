@@ -14,9 +14,9 @@ import { Menus_items } from "../entity/menuItems.entity";
  * @param {ObjectLiteral} condition - The condition to match the record against.
  * @return {Promise<ObjectLiteral | null>} A Promise that resolves to the matching record, or null if no match is found.
  */
-export async function findOneByCondition<T>(dataSource: DataSource,entity:{new(): T},condition: ObjectLiteral): Promise<ObjectLiteral | null>{
+export async function findOneByCondition<T>(dataSource: DataSource, entity: { new(): T }, condition: ObjectLiteral): Promise<ObjectLiteral | null> {
     const entityDataSource = dataSource.manager.getRepository(entity)
-    const fetchSingleRecord = await entityDataSource.findOne({where:condition})
+    const fetchSingleRecord = await entityDataSource.findOne({ where: condition })
     return fetchSingleRecord
 }
 
@@ -30,11 +30,11 @@ export async function findOneByCondition<T>(dataSource: DataSource,entity:{new()
  * @param {ObjectLiteral} entityData - The data to insert into the new record.
  * @return {Promise<ObjectLiteral>} A Promise that resolves to the saved entity data.
  */
-export async function insertDataByDb<T>(dataSource: DataSource, entity:{new() : T}, entityData: ObjectLiteral): Promise<ObjectLiteral> {
-   const entityDataSource = dataSource.manager.getRepository(entity)
-   const entityNewDataCreate = entityDataSource.create(entityData)
-   const savedEntityData = await entityDataSource.save(entityNewDataCreate)
-   return savedEntityData
+export async function insertDataByDb<T>(dataSource: DataSource, entity: { new(): T }, entityData: ObjectLiteral): Promise<ObjectLiteral> {
+    const entityDataSource = dataSource.manager.getRepository(entity)
+    const entityNewDataCreate = entityDataSource.create(entityData)
+    const savedEntityData = await entityDataSource.save(entityNewDataCreate)
+    return savedEntityData
 }
 
 /**
@@ -52,9 +52,9 @@ export async function insertDataByDb<T>(dataSource: DataSource, entity:{new() : 
  * @param {ObjectLiteral} condition - The condition to match the records against.
  * @return {Promise<ObjectLiteral[]>} A Promise that resolves to an array of matching records.
  */
-export async function findallwithCondition<T>(dataSource: DataSource, entity: {new(): T}, condition: ObjectLiteral): Promise<ObjectLiteral[]> {
+export async function findallwithCondition<T>(dataSource: DataSource, entity: { new(): T }, condition: ObjectLiteral): Promise<ObjectLiteral[]> {
     const entityDataSource = dataSource.manager.getRepository(entity)
-    const fetchSingleRecord = await entityDataSource.find({where:condition})
+    const fetchSingleRecord = await entityDataSource.find({ where: condition })
     return fetchSingleRecord
 }
 
@@ -69,11 +69,27 @@ export async function updateAndOp(table: ALLOWED_TABLES_TYPE, data: any, conditi
     await query.execute()
 }
 
-export async function menuItemsCategoryInnerJoin(id: number): Promise<MenuItemsCategory[]> {
-    const menuitemsRepo = AppDataSource.manager.getRepository(MenuItemsCategory)
-    const data = await menuitemsRepo.createQueryBuilder("MenuItemsCategories")
-    .innerJoinAndSelect("MenuItemsCategories.menu_item","menu_items")
-    .where("MenuItemsCategories.category_id = :category_id",{category_id:id})
-    .getMany()
+// export async function menuItemsCategoryInnerJoin(id: number): Promise<MenuItemsCategory[]> {
+//     const menuitemsRepo = AppDataSource.manager.getRepository(MenuItemsCategory)
+//     const data = await menuitemsRepo.createQueryBuilder("MenuItemsCategories")
+//         .innerJoinAndSelect("MenuItemsCategories.menu_item", "menu_items")
+//         .where("MenuItemsCategories.category_id = :category_id", { category_id: id })
+//         .getMany()
+//     return data
+// }
+
+export async function innerJoin<T>(dataSource: DataSource, entity: { new(): T }, mainTable: string, joinTable: { foriegnKeyTable: string, joinAliasTableName: string }, id: number,whereCondition: any,moreTables?: {  joinTableColumn: string, joinTableColumnAlias: string }[]) {
+    const entityDataSource = dataSource.manager.getRepository(entity)
+    let queryBuilder = entityDataSource.createQueryBuilder(mainTable)
+    .innerJoinAndSelect(`${mainTable}.${joinTable.foriegnKeyTable}`,`${joinTable.joinAliasTableName}`)
+
+    if (moreTables && moreTables.length > 0) {
+        moreTables.forEach((d) => {
+            queryBuilder = queryBuilder.innerJoinAndSelect(`${mainTable}.${d.joinTableColumn}`,`${d.joinTableColumnAlias}`)
+        })
+    }
+
+    queryBuilder = queryBuilder.where(`${mainTable}.${whereCondition} = :condition`,{condition: id})
+    const data = await queryBuilder.getMany()
     return data
 }
